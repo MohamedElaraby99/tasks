@@ -7,10 +7,20 @@
  *   go to same origin and Nginx proxies /api/ to backend (e.g. port 3001)
  */
 /** Base URL for API (مستخدم في LoginPage و ConnectionTest أيضاً) */
-export const API_URL =
-  import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== ''
-    ? import.meta.env.VITE_API_URL.replace(/\/$/, '') // trim trailing slash
-    : (import.meta.env.DEV ? 'http://localhost:3001/api' : '/api');
+function getApiBaseUrl(): string {
+  if (import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== '') {
+    return import.meta.env.VITE_API_URL.replace(/\/$/, '');
+  }
+  if (import.meta.env.DEV) {
+    return 'http://localhost:3001/api';
+  }
+  // Production: دائماً نفس عنوان الصفحة عشان يشتغل بالـ IP أو الدومين بدون CORS
+  if (typeof window !== 'undefined') {
+    return window.location.origin + '/api';
+  }
+  return '/api';
+}
+export const API_URL = getApiBaseUrl();
 
 // Token management
 let authToken: string | null = localStorage.getItem('auth_token');

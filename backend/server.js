@@ -38,13 +38,15 @@ import db, { initDatabase } from './database.js';
 const app = express();
 const httpServer = createServer(app);
 
-// CORS - allow frontend dev (Vite 5173) and production (3000)
+// CORS - frontend dev (Vite 5173) + production. FRONTEND_URL يمكن واحد أو عدة عناصر مفصولة بفاصلة (مثلاً http://172.17.17.31)
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
   'http://127.0.0.1:3000',
   'http://127.0.0.1:5173',
-  ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [])
+  ...(process.env.FRONTEND_URL
+    ? process.env.FRONTEND_URL.split(',').map((u) => u.trim()).filter(Boolean)
+    : [])
 ];
 
 // Socket.io setup
