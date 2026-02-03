@@ -6,7 +6,8 @@
  * - Production behind Nginx (same host): set VITE_API_URL=/api so requests
  *   go to same origin and Nginx proxies /api/ to backend (e.g. port 3001)
  */
-const API_URL =
+/** Base URL for API (مستخدم في LoginPage و ConnectionTest أيضاً) */
+export const API_URL =
   import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== ''
     ? import.meta.env.VITE_API_URL.replace(/\/$/, '') // trim trailing slash
     : (import.meta.env.DEV ? 'http://localhost:3001/api' : '/api');

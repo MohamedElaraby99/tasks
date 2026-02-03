@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Lock, User, AlertCircle, Globe, MessageCircle, KeyRound, Wifi, WifiOff, Sun, Moon } from 'lucide-react';
 import { getStoredSettings, setStoredSettings } from '../store/useStore';
+import { API_URL } from '../lib/api';
 import type { Language, Theme } from '../types';
 
 interface LoginPageProps {
@@ -8,7 +9,6 @@ interface LoginPageProps {
 }
 
 const DEVELOPER_WHATSAPP = '201026276594';
-const API_URL = 'http://localhost:3001/api';
 
 export function LoginPage({ onLogin }: LoginPageProps) {
   const [username, setUsername] = useState('');
