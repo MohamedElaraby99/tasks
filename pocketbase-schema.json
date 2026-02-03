@@ -1,0 +1,439 @@
+[
+  {
+    "name": "users",
+    "type": "base",
+    "schema": [
+      {
+        "name": "name",
+        "type": "text",
+        "required": true
+      },
+      {
+        "name": "username",
+        "type": "text",
+        "required": true,
+        "options": {
+          "min": 3,
+          "max": 50
+        }
+      },
+      {
+        "name": "email",
+        "type": "email",
+        "required": true
+      },
+      {
+        "name": "password",
+        "type": "text",
+        "required": true,
+        "options": {
+          "min": 6
+        }
+      },
+      {
+        "name": "role",
+        "type": "select",
+        "required": true,
+        "options": {
+          "values": ["admin", "ceo", "manager", "team_leader", "employee"]
+        }
+      },
+      {
+        "name": "department",
+        "type": "relation",
+        "options": {
+          "collectionId": "departments",
+          "cascadeDelete": false,
+          "maxSelect": 1
+        }
+      },
+      {
+        "name": "phone",
+        "type": "text"
+      },
+      {
+        "name": "shiftStart",
+        "type": "text"
+      },
+      {
+        "name": "shiftEnd",
+        "type": "text"
+      },
+      {
+        "name": "isActive",
+        "type": "bool",
+        "options": {
+          "default": true
+        }
+      }
+    ],
+    "indexes": [
+      "CREATE UNIQUE INDEX idx_username ON users (username)"
+    ]
+  },
+  {
+    "name": "departments",
+    "type": "base",
+    "schema": [
+      {
+        "name": "name",
+        "type": "text",
+        "required": true
+      },
+      {
+        "name": "description",
+        "type": "text"
+      },
+      {
+        "name": "managerId",
+        "type": "relation",
+        "options": {
+          "collectionId": "users",
+          "cascadeDelete": false,
+          "maxSelect": 1
+        }
+      }
+    ]
+  },
+  {
+    "name": "tasks",
+    "type": "base",
+    "schema": [
+      {
+        "name": "title",
+        "type": "text",
+        "required": true
+      },
+      {
+        "name": "description",
+        "type": "text"
+      },
+      {
+        "name": "status",
+        "type": "select",
+        "required": true,
+        "options": {
+          "values": ["new", "seen", "in_progress", "paused", "completed"]
+        }
+      },
+      {
+        "name": "priority",
+        "type": "select",
+        "required": true,
+        "options": {
+          "values": ["urgent", "high", "medium", "low"]
+        }
+      },
+      {
+        "name": "assignedTo",
+        "type": "relation",
+        "required": true,
+        "options": {
+          "collectionId": "users",
+          "cascadeDelete": false,
+          "maxSelect": 1
+        }
+      },
+      {
+        "name": "createdBy",
+        "type": "relation",
+        "required": true,
+        "options": {
+          "collectionId": "users",
+          "cascadeDelete": false,
+          "maxSelect": 1
+        }
+      },
+      {
+        "name": "department",
+        "type": "relation",
+        "required": true,
+        "options": {
+          "collectionId": "departments",
+          "cascadeDelete": false,
+          "maxSelect": 1
+        }
+      },
+      {
+        "name": "dueDate",
+        "type": "date",
+        "required": true
+      },
+      {
+        "name": "seenAt",
+        "type": "date"
+      },
+      {
+        "name": "startedAt",
+        "type": "date"
+      },
+      {
+        "name": "completedAt",
+        "type": "date"
+      },
+      {
+        "name": "pauseReason",
+        "type": "text"
+      },
+      {
+        "name": "progress",
+        "type": "number",
+        "options": {
+          "min": 0,
+          "max": 100
+        }
+      }
+    ],
+    "indexes": [
+      "CREATE INDEX idx_tasks_assignedTo ON tasks (assignedTo)",
+      "CREATE INDEX idx_tasks_department ON tasks (department)",
+      "CREATE INDEX idx_tasks_status ON tasks (status)"
+    ]
+  },
+  {
+    "name": "comments",
+    "type": "base",
+    "schema": [
+      {
+        "name": "taskId",
+        "type": "relation",
+        "required": true,
+        "options": {
+          "collectionId": "tasks",
+          "cascadeDelete": true,
+          "maxSelect": 1
+        }
+      },
+      {
+        "name": "userId",
+        "type": "relation",
+        "required": true,
+        "options": {
+          "collectionId": "users",
+          "cascadeDelete": false,
+          "maxSelect": 1
+        }
+      },
+      {
+        "name": "content",
+        "type": "text",
+        "required": true
+      }
+    ],
+    "indexes": [
+      "CREATE INDEX idx_comments_taskId ON comments (taskId)"
+    ]
+  },
+  {
+    "name": "notifications",
+    "type": "base",
+    "schema": [
+      {
+        "name": "userId",
+        "type": "relation",
+        "required": true,
+        "options": {
+          "collectionId": "users",
+          "cascadeDelete": true,
+          "maxSelect": 1
+        }
+      },
+      {
+        "name": "title",
+        "type": "text",
+        "required": true
+      },
+      {
+        "name": "message",
+        "type": "text",
+        "required": true
+      },
+      {
+        "name": "type",
+        "type": "select",
+        "required": true,
+        "options": {
+          "values": ["task", "comment", "rating", "transfer", "system"]
+        }
+      },
+      {
+        "name": "isRead",
+        "type": "bool",
+        "options": {
+          "default": false
+        }
+      },
+      {
+        "name": "relatedTaskId",
+        "type": "relation",
+        "options": {
+          "collectionId": "tasks",
+          "cascadeDelete": false,
+          "maxSelect": 1
+        }
+      }
+    ],
+    "indexes": [
+      "CREATE INDEX idx_notifications_userId ON notifications (userId)",
+      "CREATE INDEX idx_notifications_isRead ON notifications (isRead)"
+    ]
+  },
+  {
+    "name": "daily_logs",
+    "type": "base",
+    "schema": [
+      {
+        "name": "userId",
+        "type": "relation",
+        "required": true,
+        "options": {
+          "collectionId": "users",
+          "cascadeDelete": true,
+          "maxSelect": 1
+        }
+      },
+      {
+        "name": "title",
+        "type": "text",
+        "required": true
+      },
+      {
+        "name": "description",
+        "type": "text"
+      },
+      {
+        "name": "status",
+        "type": "select",
+        "required": true,
+        "options": {
+          "values": ["in_progress", "paused", "completed"]
+        }
+      },
+      {
+        "name": "startDate",
+        "type": "date",
+        "required": true
+      },
+      {
+        "name": "endDate",
+        "type": "date"
+      },
+      {
+        "name": "pauseReason",
+        "type": "text"
+      }
+    ],
+    "indexes": [
+      "CREATE INDEX idx_daily_logs_userId ON daily_logs (userId)",
+      "CREATE INDEX idx_daily_logs_startDate ON daily_logs (startDate)"
+    ]
+  },
+  {
+    "name": "task_ratings",
+    "type": "base",
+    "schema": [
+      {
+        "name": "taskId",
+        "type": "relation",
+        "required": true,
+        "options": {
+          "collectionId": "tasks",
+          "cascadeDelete": true,
+          "maxSelect": 1
+        }
+      },
+      {
+        "name": "oderId",
+        "type": "relation",
+        "required": true,
+        "options": {
+          "collectionId": "users",
+          "cascadeDelete": false,
+          "maxSelect": 1
+        }
+      },
+      {
+        "name": "odedId",
+        "type": "relation",
+        "required": true,
+        "options": {
+          "collectionId": "users",
+          "cascadeDelete": false,
+          "maxSelect": 1
+        }
+      },
+      {
+        "name": "odeedRating",
+        "type": "number",
+        "options": {
+          "min": 0,
+          "max": 5
+        }
+      },
+      {
+        "name": "autoRating",
+        "type": "number",
+        "options": {
+          "min": 0,
+          "max": 5
+        }
+      }
+    ],
+    "indexes": [
+      "CREATE UNIQUE INDEX idx_task_ratings_taskId ON task_ratings (taskId)"
+    ]
+  },
+  {
+    "name": "task_transfers",
+    "type": "base",
+    "schema": [
+      {
+        "name": "taskId",
+        "type": "relation",
+        "required": true,
+        "options": {
+          "collectionId": "tasks",
+          "cascadeDelete": true,
+          "maxSelect": 1
+        }
+      },
+      {
+        "name": "fromUserId",
+        "type": "relation",
+        "required": true,
+        "options": {
+          "collectionId": "users",
+          "cascadeDelete": false,
+          "maxSelect": 1
+        }
+      },
+      {
+        "name": "toUserId",
+        "type": "relation",
+        "required": true,
+        "options": {
+          "collectionId": "users",
+          "cascadeDelete": false,
+          "maxSelect": 1
+        }
+      },
+      {
+        "name": "transferredBy",
+        "type": "relation",
+        "required": true,
+        "options": {
+          "collectionId": "users",
+          "cascadeDelete": false,
+          "maxSelect": 1
+        }
+      },
+      {
+        "name": "reason",
+        "type": "text"
+      }
+    ],
+    "indexes": [
+      "CREATE INDEX idx_task_transfers_taskId ON task_transfers (taskId)"
+    ]
+  }
+]

@@ -1,0 +1,29 @@
+{
+  "name": "task-manager-backend",
+  "version": "2.0.0",
+  "description": "Task Management System - Node.js Backend with MongoDB",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "init-db": "node init-db.js",
+    "make-admin": "node make-admin.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "mongoose": "^8.0.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "dotenv": "^16.4.1",
+    "socket.io": "^4.7.4",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5",
+    "compression": "^1.7.4",
+    "morgan": "^1.10.0",
+    "uuid": "^9.0.0"
+  },
+  "author": "Mohamed Alaa",
+  "license": "ISC"
+}
