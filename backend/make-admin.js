@@ -47,8 +47,14 @@ async function main() {
 
   if (mode === 'promote') {
     if (!username) {
-      console.error('Usage: node make-admin.js <username>');
-      console.error('Example: node make-admin.js ahmed.ceo');
+      console.error('Usage:');
+      console.error('  إنشاء أدمن جديد:  node make-admin.js --create --username <user> --password <pass> [--name "الاسم"]');
+      console.error('  ترقية يوزر موجود: node make-admin.js <username>');
+      console.error('  تغيير كلمة السر:  node make-admin.js --set-password <username> --password <newpass>');
+      console.error('');
+      console.error('Examples:');
+      console.error('  node make-admin.js --create --username admin --password MyPass123 --name "مدير النظام"');
+      console.error('  node make-admin.js ahmed.ceo');
       process.exit(1);
     }
   } else if (mode === 'set-password') {
