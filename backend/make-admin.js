@@ -1,10 +1,12 @@
 /**
- * Make Admin Script
- * - Promote: node make-admin.js <username>
- * - Create:  node make-admin.js --create [--username <u>] [--password <p>] [--name <n>]
- * - Set password: node make-admin.js --set-password <username> --password <newpassword>
+ * Make Admin — ES Module
+ * إدارة صلاحيات الأدمن مباشرة على MongoDB بدون أي authentication.
  *
- * Env (optional): MONGODB_URI, ADMIN_USERNAME, ADMIN_PASSWORD, ADMIN_NAME
+ * ترقية يوزر → أدمن:    node make-admin.js <username>
+ * إنشاء أدمن جديد:       node make-admin.js --create --username <u> --password <p> [--name "الاسم"]
+ * تغيير كلمة السر:       node make-admin.js --set-password <username> --password <newpass>
+ *
+ * Env (اختياري): MONGO_* أو MONGODB_URI، و للإنشاء: ADMIN_USERNAME, ADMIN_PASSWORD, ADMIN_NAME
  */
 
 import 'dotenv/config';
@@ -42,54 +44,51 @@ function parseArgs() {
   return result;
 }
 
+function printUsage() {
+  console.error('');
+  console.error('Usage:');
+  console.error('  ترقية يوزر → أدمن:   node make-admin.js <username>');
+  console.error('  إنشاء أدمن جديد:      node make-admin.js --create --username <user> --password <pass> [--name "الاسم"]');
+  console.error('  تغيير كلمة السر:      node make-admin.js --set-password <username> --password <newpass>');
+  console.error('');
+  console.error('Examples:');
+  console.error('  node make-admin.js admin');
+  console.error('  node make-admin.js --create --username admin --password MyPass123 --name "مدير النظام"');
+  console.error('  node make-admin.js --set-password admin --password NewSecurePass456');
+  console.error('');
+}
+
 async function main() {
   const { mode, username, password, name } = parseArgs();
 
-  if (mode === 'promote') {
-    if (!username) {
-      console.error('Usage:');
-      console.error('  إنشاء أدمن جديد:  node make-admin.js --create --username <user> --password <pass> [--name "الاسم"]');
-      console.error('  ترقية يوزر موجود: node make-admin.js <username>');
-      console.error('  تغيير كلمة السر:  node make-admin.js --set-password <username> --password <newpass>');
-      console.error('');
-      console.error('Examples:');
-      console.error('  node make-admin.js --create --username admin --password MyPass123 --name "مدير النظام"');
-      console.error('  node make-admin.js ahmed.ceo');
-      process.exit(1);
-    }
-  } else if (mode === 'set-password') {
-    if (!username || !password) {
-      console.error('Usage: node make-admin.js --set-password <username> --password <newpassword>');
-      console.error('Example: node make-admin.js --set-password admin2 --password YourSecurePass123');
-      process.exit(1);
-    }
-    if (password.length < 6) {
-      console.error('Password must be at least 6 characters.');
-      process.exit(1);
-    }
-  } else {
-    if (!username || !password) {
-      console.error('Usage: node make-admin.js --create [--username <u>] [--password <p>] [--name <n>]');
-      console.error('Or set env: ADMIN_USERNAME, ADMIN_PASSWORD, ADMIN_NAME');
-      console.error('Example: node make-admin.js --create --username admin2 --password Secret@123 --name "Second Admin"');
-      process.exit(1);
-    }
-    if (password.length < 6) {
-      console.error('Password must be at least 6 characters.');
-      process.exit(1);
-    }
+  if (mode === 'promote' && !username) {
+    printUsage();
+    process.exit(1);
+  }
+  if (mode === 'set-password' && (!username || !password)) {
+    console.error('Usage: node make-admin.js --set-password <username> --password <newpassword>');
+    process.exit(1);
+  }
+  if (mode === 'create' && (!username || !password)) {
+    console.error('Usage: node make-admin.js --create --username <u> --password <p> [--name "الاسم"]');
+    process.exit(1);
+  }
+  if ((mode === 'set-password' || mode === 'create') && password.length < 6) {
+    console.error('كلمة السر يجب أن تكون 6 أحرف على الأقل.');
+    process.exit(1);
   }
 
   await initDatabase();
 
   if (mode === 'set-password') {
-    const user = await User.findOne({ username });
-    if (!user) {
+    const updated = await User.updateOne(
+      { username },
+      { $set: { password: bcrypt.hashSync(password, 10) } }
+    );
+    if (updated.matchedCount === 0) {
       console.error(`User not found: ${username}`);
       process.exit(1);
     }
-    const hashed = bcrypt.hashSync(password, 10);
-    await User.updateOne({ id: user.id }, { $set: { password: hashed } });
     console.log(`✅ Password updated for "${username}". You can log in with the new password.`);
     process.exit(0);
   }
@@ -104,7 +103,7 @@ async function main() {
       console.log(`User "${username}" is already an admin.`);
       process.exit(0);
     }
-    await User.updateOne({ id: user.id }, { $set: { role: 'admin' } });
+    await User.updateOne({ username }, { $set: { role: 'admin' } });
     console.log(`✅ User "${username}" (${user.name}) is now an admin.`);
     process.exit(0);
   }
@@ -116,13 +115,11 @@ async function main() {
     process.exit(1);
   }
 
-  const id = generateId();
-  const hashedPassword = bcrypt.hashSync(password, 10);
   await User.create({
-    id,
+    id: generateId(),
     name,
     username,
-    password: hashedPassword,
+    password: bcrypt.hashSync(password, 10),
     role: 'admin',
     departmentId: null,
     whatsapp: '',
