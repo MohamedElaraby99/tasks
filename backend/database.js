@@ -17,7 +17,23 @@ import {
   Settings
 } from './models/index.js';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/task-management';
+function getMongoUri() {
+  if (process.env.MONGODB_URI) return process.env.MONGODB_URI;
+  const host = process.env.MONGO_HOST || '127.0.0.1';
+  const port = process.env.MONGO_PORT || '27017';
+  const db = process.env.MONGO_DB || 'task-management';
+  const user = process.env.MONGO_USER;
+  const password = process.env.MONGO_PASSWORD;
+  const authSource = process.env.MONGO_AUTH_SOURCE || 'admin';
+  if (user && password) {
+    const encodedUser = encodeURIComponent(user);
+    const encodedPass = encodeURIComponent(password);
+    return `mongodb://${encodedUser}:${encodedPass}@${host}:${port}/${db}?authSource=${authSource}`;
+  }
+  return `mongodb://${host}:${port}/${db}`;
+}
+
+const MONGODB_URI = getMongoUri();
 
 export async function initDatabase() {
   if (mongoose.connection.readyState === 1) {
