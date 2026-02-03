@@ -1,9 +1,15 @@
 /**
  * API Client for Task Management System
  * Connects Frontend to Node.js Backend
+ *
+ * - Development: uses http://localhost:3001/api (or VITE_API_URL)
+ * - Production behind Nginx (same host): set VITE_API_URL=/api so requests
+ *   go to same origin and Nginx proxies /api/ to backend (e.g. port 3001)
  */
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_URL =
+  import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== ''
+    ? import.meta.env.VITE_API_URL.replace(/\/$/, '') // trim trailing slash
+    : (import.meta.env.DEV ? 'http://localhost:3001/api' : '/api');
 
 // Token management
 let authToken: string | null = localStorage.getItem('auth_token');
